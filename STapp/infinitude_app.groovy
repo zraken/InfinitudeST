@@ -272,14 +272,20 @@ private changeClsp(zoneId, coolingSetpoint) {
 private changeProfile(zoneId, nextProfile) {
     //Now tell the zone to use the nextProfile Comfort Profile
     log.debug "Changing Profile for Zone " + zoneId + " to " + nextProfile
-
+    def querys = [:]
+    if(nextProfile == "auto") {
+        querys = [hold: "off"]
+    }
+    else {
+        querys = [activity: nextProfile, until: "24:00"]
+    }
     def result = new physicalgraph.device.HubAction(
         method: "GET",
         path: "/api/" + zoneId + "/hold",
         headers: [
             "HOST": configURL
         ],
-        query: [activity: nextProfile, until: "24:00"]
+        query: querys
     )
     log.debug "HTTP GET Parameters: " + result
     try {
