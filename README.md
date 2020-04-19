@@ -1,5 +1,7 @@
 # InfinitudeST
 
+![Device Screen](https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/screen1.jpeg)
+
 ## Requirements
 
 Infinitude (https://github.com/nebulous/infinitude 5), doesn’t require serial integration to higher resolution access to the thermostat, air handler, heat pump and other devices (RS485 interface). You’re welcome to integrate via RS485 to get at this data but it isn’t really used by this integration and further you MUST complete the proxy integration from the wall stat for this to work. I’ve tested this on my 5 zone system and all zones are supported.
