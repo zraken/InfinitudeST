@@ -10,9 +10,9 @@ You’re welcome to continue to use all scheduling via your thermostat, these se
 
 **First**: confirm you have Infinitude working from link above, I recommend you configure the updates to be applied ~ 15s
 
-**Second**: install SmartApp via Smarthings API
+**Second**: install SmartApp via [Smartthings IDE](https://graph.api.smartthings.com/)
 
-**Third**: Install Device Handler via Smartthings API
+**Third**: Install Device Handler via [Smartthings IDE](https://graph.api.smartthings.com/)
 
 **Fourth**: Configure SmartApp with the IP/Port of Infinitude, if all works as expected it will discover your zones and configure your themostats inside smartthings using the supplied DH
 
