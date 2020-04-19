@@ -1,5 +1,5 @@
 /*
-(Based on) Ecobee Thermostat
+
 Copyright 2015 SmartThings
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
@@ -7,6 +7,7 @@ in compliance with the License. You may obtain a copy of the License at: http://
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
 on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
 for the specific language governing permissions and limitations under the License.
+(Based on) Ecobee Thermostat
 Author: SmartThings
 Date: 2013-06-13
 */
@@ -28,6 +29,11 @@ metadata {
         command "raiseHeatingSetpoint"
         command "lowerCoolSetpoint"
         command "raiseCoolSetpoint"
+        command "setProfHome"
+        command "setProfAway"
+        command "setProfSleep"
+        command "setProfAwake"
+        command "setProfAuto"
         // To satisfy some SA/rules that incorrectly using poll instead of Refresh
         command "poll"
         command "profileUpdate"
@@ -45,12 +51,19 @@ metadata {
         attribute "holdUntil", "string"
         attribute "outsideTemp", "number"
         attribute "zoneId", "string"
+        attribute "profAutoActive", "string"
+        attribute "profHomeActive", "string"
+        attribute "profAwayActive", "string"
+        attribute "profSleepActive", "string"
+        attribute "profAwakeActive", "string"
     }
 
     tiles {
         multiAttributeTile(name: "temperature", type: "generic", width: 3, height: 2, canChangeIcon: true) {
             tileAttribute("device.temperature", key: "PRIMARY_CONTROL") {
-                attributeState("temperature", label: '\n${currentValue}°', icon: "st.alarm.temperature.normal", backgroundColors: [
+                attributeState("temperature", label: '\n${currentValue}°',
+                  icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/temperature-256.png",
+                  backgroundColors: [
                     // Celsius
                     [value: 0, color: "#153591"],
                     [value: 7, color: "#1e9cbb"],
@@ -70,52 +83,76 @@ metadata {
                 ])
             }
             tileAttribute("device.humidity", key: "SECONDARY_CONTROL") {
-                attributeState "humidity", label: '${currentValue}%', icon: "st.Weather.weather12"
+                attributeState "humidity", label: '${currentValue}',
+                icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/humidity2-256.png"
             }
         }
 
+        standardTile("profileSet1", "device.profHomeActive", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
+            state "yes", /*label: 'Home',*/ action: "setProfHome", backgroundColor: "#20cc20",
+                icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/athome256.png"
+            state "no", /*label: 'Home',*/ action: "setProfHome", backgroundColor: "#ffffff",
+                icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/athome256.png"
+            state "active", /*label: 'Home',*/ action: "setProfHome", backgroundColor: "#a0c0ff",
+                icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/athome256.png"
+        }
+        standardTile("profileSet2", "device.profAwayActive", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
+            state "yes", /*label: 'Away',*/ action: "setProfAway", backgroundColor: "#20cc20",
+                icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/away256.png"
+            state "no", /*label: 'Away',*/ action: "setProfAway", backgroundColor: "#ffffff",
+                icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/away256.png"                
+            state "active", /*label: 'Away',*/ action: "setProfAway", backgroundColor: "#a0c0ff",
+                icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/away256.png"                
+        }
+        standardTile("profileSet3", "device.profSleepActive", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
+            state "yes", /*label: 'Sleep',*/ action: "setProfSleep", backgroundColor: "#20cc20",
+                icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/sleep256.png"
+            state "no", /*label: 'Sleep',*/ action: "setProfSleep", backgroundColor: "#ffffff",
+                icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/sleep256.png"
+            state "active", /*label: 'Sleep',*/ action: "setProfSleep", backgroundColor: "#a0c0ff",
+                icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/sleep256.png"
+        }
+        standardTile("profileSet4", "device.profAwakeActive", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
+            state "yes", /*label: 'Awake',*/ action: "setProfAwake", backgroundColor: "#20cc20",
+                icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/wake138.png"
+            state "no", /*label: 'Awake',*/ action: "setProfAwake", backgroundColor: "#ffffff",
+                icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/wake138.png"
+            state "active", /*label: 'Awake',*/ action: "setProfAwake", backgroundColor: "#a0c0ff",
+                icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/wake138.png"
+        }
+        standardTile("profileSet5", "device.profAutoActive", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
+            state "yes", label: 'Auto', action: "setProfAuto", backgroundColor: "#20cc20"
+            state "no", label: 'Auto', action: "setProfAuto", backgroundColor: "#ffffff"
+        }
+        
         standardTile("raiseHeatingSetpoint", "device.heatingSetpoint", width: 2, height: 1, decoration: "flat") {
-            state "heatingSetpoint", label: 'Heat Up', action: "raiseHeatingSetpoint" , icon: "st.thermostat.thermostat-up"
+            state "heatingSetpoint", label: 'Heat Up', action: "raiseHeatingSetpoint", backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/thermostat-up.png"
+        }
+        standardTile("lowerHeatingSetpoint", "device.heatingSetpoint", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
+            state "heatingSetpoint", label: 'Heat Down', action: "lowerHeatingSetpoint", backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/thermostat-down.png"
         }
         valueTile("thermostat", "device.thermostat", width: 2, height: 1, decoration: "flat") {
             state "thermostat", label: 'Activity:\n${currentValue}', backgroundColor: "#ffffff"
         }
         standardTile("raiseCoolSetpoint", "device.heatingSetpoint", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "heatingSetpoint", label: 'Cool Up', action: "raiseCoolSetpoint", icon: "st.thermostat.thermostat-up"
+            state "heatingSetpoint", label: 'Cool Up', action: "raiseCoolSetpoint", backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/thermostat-up.png"
         }
-
+        standardTile("lowerCoolSetpoint", "device.coolingSetpoint", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
+            state "coolingSetpoint", label: 'Cool Down', action: "lowerCoolSetpoint", backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/thermostat-down.png"
+        }
         valueTile("heatingSetpoint", "device.heatingSetpoint", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
             state "heatingSetpoint", label: '${currentValue}°', backgroundColor: "#e86d13"
-        }
-
-        standardTile("thermostatSchedule", "device.thermostatSchedule", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "home", action: "profileUpdate", label: 'Profile: Home', nextState: "changing" /*, icon: "st.Home.home4" */
-            state "away", action: "profileUpdate", label: 'Profile: Away', nextState: "changing" /*, icon: "st.Home.home2" */
-            state "sleep", action: "profileUpdate", label: 'Profile: Sleep', nextState: "changing" /*, icon: "st.Home.home1" */
-            state "wake", action: "profileUpdate", label: 'Profile: Wake', nextState: "changing" /*, icon: "st.Home.home1" */
-            state "manual", action: "profileUpdate", label: 'Profile: Manual', nextState: "changing" /*, icon: "st.Home.home4" */
-            state "auto", action: "profileUpdate", label: 'Profile: Auto', nextState: "changing" /*, icon: "st.Home.home4" */
-            state "changing", label: 'Updating...' /*, icon: "st.motion.motion.active" */
         }
 
         valueTile("coolingSetpoint", "device.coolingSetpoint", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
             state "coolingSetpoint", label: '${currentValue}°', backgroundColor: "#00a0dc"
         }
 
-        standardTile("lowerHeatingSetpoint", "device.heatingSetpoint", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "heatingSetpoint", label: 'Heat Down', action: "lowerHeatingSetpoint", icon: "st.thermostat.thermostat-down"
-        }
         standardTile("refresh", "device.thermostatMode", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "default", label: 'Refresh', action: "refresh.refresh" /*, icon: "st.secondary.refresh"*/
-        }
-        standardTile("lowerCoolSetpoint", "device.coolingSetpoint", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "coolingSetpoint", label: 'Cool Down', action: "lowerCoolSetpoint", icon: "st.thermostat.thermostat-down"
+            state "default", label: 'Refresh', action: "refresh.refresh" , backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/refresh.png"
         }
         valueTile("fanMode", "device.thermostatFanMode", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
             state "fanMode", label: 'Fan Mode:\n${currentValue}', backgroundColor: "ffffff"
-        }
-        valueTile("outsideTemp", "device.outsideAirTemp", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "outsideTemp", label: '${currentValue}° outside', backgroundColor: "#ffffff" /*, icon: "st.Weather.weather14" */
         }
         valueTile("holdStatus", "device.thermostatHoldStatus", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
             state "holdStatus", label: 'Hold:\n${currentValue}', backgroundColor: "#ffffff"
@@ -126,11 +163,6 @@ metadata {
         valueTile("damperPosition", "device.thermostatDamper", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
             state "damperPosition", label: 'Damper:\n${currentValue}', backgroundColor: "#ffffff"
         }
-        valueTile("zoneId", "device.zoneId", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "zoneId", label: 'Zone ID:\n${currentValue}', backgroundColor: "#ffffff"
-        }
-
-
 
         // Not Displaying These        
         standardTile("resumeProgram", "device.resumeProgram", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
@@ -146,14 +178,28 @@ metadata {
             state "updating", label: "Updating...", icon: "st.secondary.secondary"
         }
         // Not Displaying These   
-
-
+        valueTile("outsideTemp", "device.outsideAirTemp", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
+            state "outsideTemp", label: '${currentValue}° outside', backgroundColor: "#ffffff" /*, icon: "st.Weather.weather14" */
+        }
+        valueTile("zoneId", "device.zoneId", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
+            state "zoneId", label: 'Zone ID:\n${currentValue}', backgroundColor: "#ffffff"
+        }
+        standardTile("thermostatSchedule", "device.thermostatSchedule", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
+            state "home", action: "profileUpdate", label: 'Profile: Home', nextState: "changing", backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/home4-icn.png"
+            state "away", action: "profileUpdate", label: 'Profile: Away', nextState: "changing", backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/home3-icn.png"
+            state "sleep", action: "profileUpdate", label: 'Profile: Sleep', nextState: "changing", backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/bedroom2-icn.png"
+            state "wake", action: "profileUpdate", label: 'Profile: Wake', nextState: "changing", backgroundColor: "#ffffff" , icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/health7-icn.png"
+            state "manual", action: "profileUpdate", label: 'Profile: Manual', nextState: "changing", backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/preferences-tile.png" 
+            state "auto", action: "profileUpdate", label: 'Profile: Auto', nextState: "changing", backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/home1-icn.png"
+            state "changing", label: 'Updating...' /*, icon: "st.motion.motion.active" */
+        }
 
         main "temperature"
-        details(["temperature", "thermostatSchedule", "raiseHeatingSetpoint", "raiseCoolSetpoint",
+        details(["temperature",
+        	"profileSet1", "profileSet2", "profileSet3", "profileSet4", "profileSet5",
+        	"refresh", "raiseHeatingSetpoint", "raiseCoolSetpoint",
             "thermostat", "heatingSetpoint", "coolingSetpoint", "fanMode", "lowerHeatingSetpoint",
-            "lowerCoolSetpoint", "damperPosition", "holdStatus", "holdUntil", "refresh", "outsideTemp",
-            "zoneId"
+            "lowerCoolSetpoint", "damperPosition", "holdStatus", "holdUntil"
         ])
     }
 
@@ -202,6 +248,47 @@ void poll2() {
     parent.syncSystem()
 }
 
+def setProfile(nextProfile) {
+    sendEvent([name: "thermostat", value: "updating"])
+    sendEvent([name: "temperature", value: "Updating..."])
+
+    def currentProfile = device.currentValue("thermostatSchedule")
+    def currentZone = device.currentValue("zoneId")
+    log.debug "Profile Update for Zone : " + currentZone + " from: " + currentProfile + " to: " + nextProfile
+    parent.changeProfile(currentZone, nextProfile)
+    sendEvent([name: "thermostatSchedule", value: nextProfile])
+    def modes = ["home":"profHomeActive", "away":"profAwayActive", "sleep":"profSleepActive", "wake":"profAwakeActive", "auto":"profAutoActive"]	
+    for(mode in modes) {
+        if(mode.getKey() == nextProfile) {
+            sendEvent([name: mode.getValue(), value: "yes"])    
+        }
+        else {
+            sendEvent([name: mode.getValue(), value: "no"])    
+        }         
+    }
+    runIn(15, "refresh", [overwrite: true])
+}
+def setProfHome() {
+	setProfile("home")
+    sendEvent([name: "profAutoActive", value: "no"])    
+}
+def setProfAway() {
+	setProfile("away")
+    sendEvent([name: "profAutoActive", value: "no"])    
+}
+def setProfAwake() {
+	setProfile("wake")
+    sendEvent([name: "profAutoActive", value: "no"])    
+}
+def setProfSleep() {
+	setProfile("sleep")
+    sendEvent([name: "profAutoActive", value: "no"])    
+}
+def setProfAuto() {
+	setProfile("auto")
+    sendEvent([name: "profAutoActive", value: "yes"])    
+}
+
 def profileUpdate() {
     sendEvent([name: "thermostat", value: "updating"])
     def currentProfile = device.currentValue("thermostatSchedule")
@@ -227,7 +314,7 @@ def profileUpdate() {
     }
     if (currentProfile == "auto") {
         nextProfile = "home"
-    } 
+    }    
 
     log.debug "Profile Update for Zone : " + currentZone + " from: " + currentProfile + " to: " + nextProfile
     parent.changeProfile(currentZone, nextProfile)
@@ -237,9 +324,9 @@ def profileUpdate() {
 
 def zUpdate(temp, systemStatus, hum, hsp, csp, fan, currSched, oat, hold, otmr, damperposition, zoneid) {
     log.debug "zupdate: " + temp + ", " + systemStatus + ", " + hum + ", " + hsp + ", " + csp + ", " + fan + ", " + currSched + ", " + oat + ", " + hold + ", " + otmr + ", " + damperposition + ", " + zoneid
+    def oldSched = device.currentValue("thermostatSchedule")
     sendEvent([name: "temperature", value: temp, unit: "F"])
     sendEvent([name: "thermostat", value: systemStatus])
-    sendEvent([name: "humidity", value: hum])
     sendEvent([name: "heatingSetpoint", value: hsp])
     sendEvent([name: "coolingSetpoint", value: csp])
     sendEvent([name: "thermostatFanMode", value: fan])
@@ -249,7 +336,20 @@ def zUpdate(temp, systemStatus, hum, hsp, csp, fan, currSched, oat, hold, otmr, 
     sendEvent([name: "thermostatHoldUntil", value: otmr])
     sendEvent([name: "thermostatDamper", value: damperposition])
     sendEvent([name: "zoneId", value: zoneid])
-
+    hum = "Indoor humidity " + hum + "%\nOutside temp " + oat + "°"
+    sendEvent([name: "humidity", value: hum])
+    def modes = ["home":"profHomeActive", "away":"profAwayActive", "sleep":"profSleepActive", "wake":"profAwakeActive", "auto":"profAutoActive"]
+    sendEvent([name: modes.get(oldSched), value: "no"])
+    if(hold == "off") {
+        //mode = Auto so mark this active profile in blue
+        sendEvent([name: modes.get(currSched), value: "active"])
+        sendEvent([name: "profAutoActive", value: "yes"])    
+    }
+    else {
+        //mode = DOle so mark this active profile in green
+        sendEvent([name: modes.get(currSched), value: "yes"])
+        sendEvent([name: "profAutoActive", value: "no"])    
+    }
 }
 def generateEvent(Map results) {
     if (results) {
@@ -493,6 +593,7 @@ def generateFanModeEvent(fanMode) {
 def generateOperatingStateEvent(operatingState) {
     sendEvent(name: "thermostatOperatingState", value: operatingState, descriptionText: "device.displayName is {operatingState}", displayed: true)
 }
+
 def off() {
     setThermostatMode("off")
 }
@@ -722,4 +823,3 @@ def getTempInDeviceScale(temp, scale) {
 def roundC(tempC) {
     return (Math.round(tempC.toDouble() * 2)) / 2
 }
-

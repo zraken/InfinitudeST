@@ -90,7 +90,7 @@ def initialize() {
             log.debug "Processing DNI: ${dni} with Value: {val}"
         def d = getChildDevice(dni)
         if (!d) {
-            d = addChildDevice("SmartThingsMod", "Infinitude Thermostat DEF", dni, null, ["label": "Stat: " + dni.split("\\|")[3]])
+            d = addChildDevice("SmartThingsMod", "Infinitude Thermostat", dni, null, ["label": "Stat: " + dni.split("\\|")[3]])
             log.debug "----->created ${d.displayName} with id $dni"
         } else {
             log.debug "found ${d.displayName} with id $dni already exists"
@@ -381,4 +381,3 @@ def refreshChild(dni) {
         log.debug "Skipping refresh for unused thermostat"
     }
 }
-
