@@ -94,6 +94,7 @@ metadata {
             state "sleep", action: "profileUpdate", label: 'Profile: Sleep', nextState: "changing" /*, icon: "st.Home.home1" */
             state "wake", action: "profileUpdate", label: 'Profile: Wake', nextState: "changing" /*, icon: "st.Home.home1" */
             state "manual", action: "profileUpdate", label: 'Profile: Manual', nextState: "changing" /*, icon: "st.Home.home4" */
+            state "auto", action: "profileUpdate", label: 'Profile: Auto', nextState: "changing" /*, icon: "st.Home.home4" */
             state "changing", label: 'Updating...' /*, icon: "st.motion.motion.active" */
         }
 
@@ -222,8 +223,11 @@ def profileUpdate() {
         nextProfile = "awake"
     }
     if (currentProfile == "awake") {
-        nextProfile = "home"
+        nextProfile = "auto"
     }
+    if (currentProfile == "auto") {
+        nextProfile = "home"
+    } 
 
     log.debug "Profile Update for Zone : " + currentZone + " from: " + currentProfile + " to: " + nextProfile
     parent.changeProfile(currentZone, nextProfile)
