@@ -1,4 +1,4 @@
-# InfinitudeST
+# InfinitudeST Device Handler Screenshot
 
 ![Device Screen](https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/screen1.jpeg)
 
