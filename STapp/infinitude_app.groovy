@@ -7,8 +7,8 @@ for the specific language governing permissions and limitations under the Licens
 */
 
 definition(
-    name: "Infinitude Integration DEF",
-    namespace: "Infinitude",
+    name: "Infinitude Integration",
+    namespace: "InfinitudeST",
     author: "zraken, swerb73",
     description: "Infinitude Integration for Carrier/Bryant Thermostats",
     category: "SmartThings Labs",

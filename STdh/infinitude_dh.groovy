@@ -12,7 +12,7 @@ Author: SmartThings
 Date: 2013-06-13
 */
 metadata {
-    definition(name: "Infinitude Thermostat DEF", namespace: "SmartThingsMod", author: "SmartThingsMod") {
+    definition(name: "Infinitude Thermostat", namespace: "InfinitudeST", author: "SmartThingsMod") {
         capability "Actuator"
         capability "Thermostat"
         capability "Temperature Measurement"
