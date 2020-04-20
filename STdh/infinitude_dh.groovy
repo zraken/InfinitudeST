@@ -12,7 +12,7 @@ Author: SmartThings
 Date: 2013-06-13
 */
 metadata {
-    definition(name: "Infinitude Thermostat", namespace: "InfinitudeST", author: "SmartThingsMod") {
+    definition(name: "Infinitude Thermostat DEF", namespace: "SmartThingsMod", author: "SmartThingsMod") {
         capability "Actuator"
         capability "Thermostat"
         capability "Temperature Measurement"
@@ -88,7 +88,7 @@ metadata {
             }
         }
 
-        standardTile("profileSet1", "device.profHomeActive", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
+        standardTile("profileSet1", "device.profHomeActive", width: 1, height: 1, inactiveLabel: false/*, decoration: "flat"*/) {
             state "yes", /*label: 'Home',*/ action: "setProfHome", backgroundColor: "#20cc20",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/athome256.png"
             state "no", /*label: 'Home',*/ action: "setProfHome", backgroundColor: "#ffffff",
@@ -96,7 +96,7 @@ metadata {
             state "active", /*label: 'Home',*/ action: "setProfHome", backgroundColor: "#a0c0ff",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/athome256.png"
         }
-        standardTile("profileSet2", "device.profAwayActive", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
+        standardTile("profileSet2", "device.profAwayActive", width: 1, height: 1, inactiveLabel: false/*, decoration: "flat"*/) {
             state "yes", /*label: 'Away',*/ action: "setProfAway", backgroundColor: "#20cc20",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/away256.png"
             state "no", /*label: 'Away',*/ action: "setProfAway", backgroundColor: "#ffffff",
@@ -104,7 +104,7 @@ metadata {
             state "active", /*label: 'Away',*/ action: "setProfAway", backgroundColor: "#a0c0ff",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/away256.png"                
         }
-        standardTile("profileSet3", "device.profSleepActive", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
+        standardTile("profileSet3", "device.profSleepActive", width: 1, height: 1, inactiveLabel: false/*, decoration: "flat"*/) {
             state "yes", /*label: 'Sleep',*/ action: "setProfSleep", backgroundColor: "#20cc20",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/sleep256.png"
             state "no", /*label: 'Sleep',*/ action: "setProfSleep", backgroundColor: "#ffffff",
@@ -112,7 +112,7 @@ metadata {
             state "active", /*label: 'Sleep',*/ action: "setProfSleep", backgroundColor: "#a0c0ff",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/sleep256.png"
         }
-        standardTile("profileSet4", "device.profAwakeActive", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
+        standardTile("profileSet4", "device.profAwakeActive", width: 1, height: 1, inactiveLabel: false/*, decoration: "flat"*/) {
             state "yes", /*label: 'Awake',*/ action: "setProfAwake", backgroundColor: "#20cc20",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/wake138.png"
             state "no", /*label: 'Awake',*/ action: "setProfAwake", backgroundColor: "#ffffff",
@@ -120,9 +120,9 @@ metadata {
             state "active", /*label: 'Awake',*/ action: "setProfAwake", backgroundColor: "#a0c0ff",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/wake138.png"
         }
-        standardTile("profileSet5", "device.profAutoActive", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "yes", label: 'Auto', action: "setProfAuto", backgroundColor: "#20cc20"
-            state "no", label: 'Auto', action: "setProfAuto", backgroundColor: "#ffffff"
+        standardTile("profileSet5", "device.profAutoActive", width: 2, height: 1, inactiveLabel: false/*, decoration: "flat"*/) {
+            state "yes", label: 'Res', action: "setProfAuto", backgroundColor: "#20cc20"
+            state "no", label: 'Res', action: "setProfAuto", backgroundColor: "#ffffff"
         }
         
         standardTile("raiseHeatingSetpoint", "device.heatingSetpoint", width: 2, height: 1, decoration: "flat") {
@@ -170,12 +170,12 @@ metadata {
             state "updating", label: "Working", icon: "st.secondary.secondary"
         }
         standardTile("mode", "device.thermostatMode", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "off", action: "switchMode", nextState: "updating", icon: "st.thermostat.heating-cooling-off"
-            state "heat", action: "switchMode", nextState: "updating", icon: "st.thermostat.heat"
-            state "cool", action: "switchMode", nextState: "updating", icon: "st.thermostat.cool"
-            state "auto", action: "switchMode", nextState: "updating", icon: "st.thermostat.auto"
-            state "emergency heat", action: "switchMode", nextState: "updating", icon: "st.thermostat.emergency-heat"
-            state "updating", label: "Updating...", icon: "st.secondary.secondary"
+            state "off", action: "switchMode", nextState: "updating", label: 'Off'/*, icon: "st.thermostat.heating-cooling-off"*/
+            state "heat", action: "switchMode", nextState: "updating", label: 'Heat'/*, icon: "st.thermostat.heat"*/
+            state "cool", action: "switchMode", nextState: "updating", label: 'Cool'/*, icon: "st.thermostat.cool"*/
+            state "auto", action: "switchMode", nextState: "updating", label: 'Auto'/*, icon: "st.thermostat.auto"*/
+            state "fanonly", action: "switchMode", nextState: "updating", label: 'FanOnly'/*, icon: "st.thermostat.emergency-heat"*/
+            state "updating", label: "Updating..."/*, icon: "st.secondary.secondary"*/
         }
         // Not Displaying These   
         valueTile("outsideTemp", "device.outsideAirTemp", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
@@ -199,7 +199,7 @@ metadata {
         	"profileSet1", "profileSet2", "profileSet3", "profileSet4", "profileSet5",
         	"refresh", "raiseHeatingSetpoint", "raiseCoolSetpoint",
             "thermostat", "heatingSetpoint", "coolingSetpoint", "fanMode", "lowerHeatingSetpoint",
-            "lowerCoolSetpoint", "damperPosition", "holdStatus", "holdUntil"
+            "lowerCoolSetpoint", "damperPosition", "holdStatus", "holdUntil", "mode"
         ])
     }
 
@@ -485,7 +485,8 @@ void resumeProgram() {
 }
 
 def modes() {
-    return state.supportedThermostatModes
+    //xxxxx return state.supportedThermostatModes
+    ["off", "heat", "cool", "auto", "fanonly"]
 }
 
 def fanModes() {
@@ -512,6 +513,11 @@ def switchMode() {
 
 def switchToMode(mode) {
     log.debug "switchToMode: ${mode}"
+    parent.setMode(mode)
+    sendEvent([name: "thermostatMode", value: mode])
+    runIn(15, "refresh", [overwrite: true])
+
+    /*****
     def deviceId = device.deviceNetworkId.split(/./).last()
     // Thermostat's mode for "emergency heat" is "auxHeatOnly"
     if (!(parent.setMode(((mode == "emergency heat") ? "auxHeatOnly" : mode), deviceId))) {
@@ -519,6 +525,7 @@ def switchToMode(mode) {
         // Ensure the DTH tile is reset
         generateModeEvent(device.currentValue("thermostatMode"))
     }
+    *****/
     //XYZ runIn(5, "refresh", [overwrite: true])
 }
 
