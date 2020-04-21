@@ -219,10 +219,15 @@ metadata {
 
 }
 
-void installed() {
+def installed() {
     // The device refreshes every 5 minutes by default so if we miss 2 refreshes we can consider it offline
     // Using 12 minutes because in testing, device health team found that there could be "jitter"
     sendEvent(name: "checkInterval", value: 60 * 12, data: [protocol: "cloud"], displayed: false)
+    state.modes = ["home":"profHomeActive", "away":"profAwayActive", "sleep":"profSleepActive", "wake":"profAwakeActive", "auto":"profAutoActive", "manual":"profManualActive"]	
+    for(mode in state.modes) {
+        sendEvent([name: mode.getValue(), value: "no"])    
+    }
+    sendEvent([name: "thermostatSchedule", value: "auto"])    
 }
 
 // Device Watch will ping the device to proactively determine if the device has gone offline
@@ -261,8 +266,8 @@ def setProfile(nextProfile) {
     log.debug "Profile Update for Zone : " + currentZone + " from: " + currentProfile + " to: " + nextProfile
     parent.changeProfile(currentZone, nextProfile)
     sendEvent([name: "thermostatSchedule", value: nextProfile])
-    def modes = ["home":"profHomeActive", "away":"profAwayActive", "sleep":"profSleepActive", "wake":"profAwakeActive", "auto":"profAutoActive"]	
-    for(mode in modes) {
+    //def modes = ["home":"profHomeActive", "away":"profAwayActive", "sleep":"profSleepActive", "wake":"profAwakeActive", "auto":"profAutoActive"]	
+    for(mode in state.modes) {
         if(mode.getKey() == nextProfile) {
             sendEvent([name: mode.getValue(), value: "yes"])    
         }
@@ -337,17 +342,17 @@ def zUpdate(temp, systemStatus, hum, hsp, csp, fan, currSched, oat, hold, otmr, 
     sendEvent([name: "zoneId", value: zoneid])
     //hum = "Indoor humidity " + hum + "%\nOutside temp " + oat + "°"
     sendEvent([name: "humidity", value: hum])
-    def modes = ["home":"profHomeActive", "away":"profAwayActive", "sleep":"profSleepActive", "wake":"profAwakeActive", "auto":"profAutoActive", "manual":"profManualActive"]
-    sendEvent([name: modes.get(oldSched), value: "no"])
+    //def modes = ["home":"profHomeActive", "away":"profAwayActive", "sleep":"profSleepActive", "wake":"profAwakeActive", "auto":"profAutoActive", "manual":"profManualActive"]
+    sendEvent([name: state.modes.get(oldSched), value: "no"])
     if(hold == "off") {
         //mode = Auto so mark this active profile in blue
-        sendEvent([name: modes.get(currSched), value: "active"])
+        sendEvent([name: state.modes.get(currSched), value: "active"])
         sendEvent([name: "profAutoActive", value: "yes"])
         sendEvent([name: "profManualActive", value: "no"])    
     }
     else {
         //mode = Hold so mark this active profile in green
-        sendEvent([name: modes.get(currSched), value: "yes"])
+        sendEvent([name: state.modes.get(currSched), value: "yes"])
         sendEvent([name: "profAutoActive", value: "no"])
     }
     //ZZZZZ TEMP

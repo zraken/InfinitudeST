@@ -27,7 +27,8 @@ def prefLogIn() {
     def showUninstall = configURL != null
     return dynamicPage(name: "prefLogIn", title: "Click next to proceed…", nextPage: "pausePage", uninstall: showUninstall, install: false) {
         section("Server URL") {
-            input(name: "configURL", type: "text", title: "Local network ip_address:port", defaultValue: "192.168.2.138:3000", description: "Infinitude LAN Server Address")
+            input(name: "configURL", type: "text", title: "Local network ip_address:port",
+              defaultValue: "192.168.2.138:3000", description: "Infinitude Server Address:Port")
         }
     }
 }
@@ -80,11 +81,11 @@ def uninstalled() {
 
 def initialize() {
     // Set initial states
+    def timeString = new Date(now()).format("yyyy-MM-dd h:mm a", location.timeZone)
+    state.syncTime = timeString
     state.data = [:]
-    state.setData = [:]
     state.SystemRunning = 1
 
-    //selectedThermostats.each { dni, val ->
     def devices = selectedThermostats.collect {
         dni ->
             log.debug "Processing DNI: ${dni} with Value: {val}"
@@ -99,7 +100,7 @@ def initialize() {
     }
     log.debug "Completed creating devices"
 
-    pollTask()
+    schedule("* */" + settings.polling + " * * * ?", syncSystem)
 }
 
 import groovy.json.JsonSlurper
@@ -112,20 +113,17 @@ def httpCallback(physicalgraph.device.HubResponse hubResponseX) {
     def object = new groovy.json.JsonSlurper().parseText(hubResponseX.body)
     state.thermostatList = [:]
     state.data = [:]
-    state.outsideairtemp = 0
+    state.outsideAirTemp = 99
 
     def systemName = "Thermostat"
 
     if (hubResponseX.status == 200) {
-        log.debug "-----APIRESP(systems/id/status) 3"
         state.outsideAirTemp = object.oat[0]
         object.zones[0].zone.each {
             zone ->
                 if (zone.enabled[0] == "on") {
                     def dni = [app.id, systemName, zone.id[0], zone.name[0] ].join('|')
-                    log.debug "DNI:: " + dni
-
-					state.thermostatList[dni] = systemName + ":" + zone.name[0]
+                    state.thermostatList[dni] = systemName + ":" + zone.name[0]
 
                     //Get the current status of each device
                     state.data[dni] = [
@@ -146,31 +144,55 @@ def httpCallback(physicalgraph.device.HubResponse hubResponseX) {
                     if (state.SystemRunning) {
                         refreshChild(dni)
                     }
-                    /*
-                                           log.debug "Temperature: " + state.data[dni].temperature
-                                           log.debug "Humidity: " + state.data[dni].humidity
-                                           log.debug "Heat set point: " + state.data[dni].heatingSetpoint
-                                           log.debug "Cooling set point: " + state.data[dni].coolingSetpoint
-                                           log.debug "Fan: " + state.data[dni].thermostatFanMode
-                                           log.debug "Operating state: " + state.data[dni].thermostatOperatingState
-                                           log.debug "Current schedule mode: " + state.data[dni].thermostatActivityState
-                                           log.debug "Current Hold Status: " + state.data[dni].thermostatHoldStatus
-                                           log.debug "Hold Until: " + state.data[dni].thermostatHoldUntil
-                                           log.debug "Current Damper Position: " + state.data[dni].thermostatDamper
-                                           log.debug "Current Outside Temp: " + state.outsideAirTemp
-                                           log.debug "Zone ID: " + state.data[dni].thermostatZoneId
-                                           log.debug "=====Done=====" */
+                    /****
+                    log.debug "Temperature: " + state.data[dni].temperature
+                    log.debug "Humidity: " + state.data[dni].humidity
+                    log.debug "Heat set point: " + state.data[dni].heatingSetpoint
+                    log.debug "Cooling set point: " + state.data[dni].coolingSetpoint
+                    log.debug "Fan: " + state.data[dni].thermostatFanMode
+                    log.debug "Operating state: " + state.data[dni].thermostatOperatingState
+                    log.debug "Current schedule mode: " + state.data[dni].thermostatActivityState
+                    log.debug "Current Hold Status: " + state.data[dni].thermostatHoldStatus
+                    log.debug "Hold Until: " + state.data[dni].thermostatHoldUntil
+                    log.debug "Current Damper Position: " + state.data[dni].thermostatDamper
+                    log.debug "Current Outside Temp: " + state.outsideAirTemp
+                    log.debug "Zone ID: " + state.data[dni].thermostatZoneId
+                    log.debug "=====Done====="
+                    ****/
                 }
         }
     } else {
         log.debug "API request failed"
     }
-
-    log.debug state.thermostatList
-    //xxxxx return thermostatList
 }
 
-private syncSystem() {
+def refreshChild(dni) {
+    log.debug "Refreshing for child " + dni
+    //def dni = [ app.id, systemID, zone.’@id’.text().toString() ].join(’|’)
+    def d = getChildDevice(dni)
+    if (d) {
+        log.debug "–Refreshing Child Zone ID: " + state.data[dni].thermostatZoneId
+        d.zUpdate(state.data[dni].temperature,
+            state.data[dni].thermostatOperatingState,
+            state.data[dni].humidity,
+            state.data[dni].heatingSetpoint,
+            state.data[dni].coolingSetpoint,
+            state.data[dni].thermostatFanMode,
+            state.data[dni].thermostatActivityState,
+            state.outsideAirTemp,
+            state.data[dni].thermostatHoldStatus,
+            state.data[dni].thermostatHoldUntil,
+            state.data[dni].thermostatDamper,
+            state.data[dni].thermostatZoneId)
+        log.debug "Data sent to DH"
+    } else {
+        log.debug "Skipping refresh for unused thermostat"
+    }
+}
+def syncSystem() {
+    log.debug "Syncing system"
+    def timeString = new Date(now()).format("yyyy-MM-dd h:mm a", location.timeZone)
+    state.initTime = timeString
     def result = new physicalgraph.device.HubAction(
         method: "GET",
         path: "/api/status",
@@ -179,7 +201,6 @@ private syncSystem() {
         ],
         null, [callback: httpCallback]
     )
-    log.debug "syncSystem called"
     try {
         sendHubCommand(result)
     } catch (all) {
@@ -198,7 +219,7 @@ private changeHtsp(zoneId, heatingSetPoint) {
         ],
         query: [htsp: heatingSetPoint]
     )
-    log.debug "HTTP GET Parameters: " + result
+    //log.debug "HTTP GET Parameters: " + result
     try {
         sendHubCommand(result)
     } catch (all) {
@@ -207,10 +228,10 @@ private changeHtsp(zoneId, heatingSetPoint) {
 
     //Now tell the zone to use the Manual Comfort Profile
     def NowDate = new Date(now())
-    log.debug "Now = ${NowDate.format('dd-MM-yy HH:mm',location.timeZone)}"
+    //log.debug "Now = ${NowDate.format('dd-MM-yy HH:mm',location.timeZone)}"
     NowDate.set(minute: NowDate.minutes + 15)
     def HoldTime = NowDate.format('HH:mm', location.timeZone)
-    log.debug "Later = " + HoldTime
+    //log.debug "Later = " + HoldTime
 
     result = new physicalgraph.device.HubAction(
         method: "GET",
@@ -220,7 +241,7 @@ private changeHtsp(zoneId, heatingSetPoint) {
         ],
         query: [activity: "manual", until: "24:00"]
     )
-    log.debug "HTTP GET Parameters: " + result
+    //log.debug "HTTP GET Parameters: " + result
     try {
         sendHubCommand(result)
     } catch (all) {
@@ -239,7 +260,7 @@ private changeClsp(zoneId, coolingSetpoint) {
         ],
         query: [clsp: coolingSetpoint]
     )
-    log.debug "HTTP GET Parameters: " + result
+    //log.debug "HTTP GET Parameters: " + result
     try {
         sendHubCommand(result)
     } catch (all) {
@@ -248,10 +269,10 @@ private changeClsp(zoneId, coolingSetpoint) {
 
     //Now tell the zone to use the Manual Comfort Profile
     def NowDate = new Date(now())
-    log.debug "Now = ${NowDate.format('dd-MM-yy HH:mm',location.timeZone)}"
+    //log.debug "Now = ${NowDate.format('dd-MM-yy HH:mm',location.timeZone)}"
     NowDate.set(minute: NowDate.minutes + 15)
     def HoldTime = NowDate.format('HH:mm', location.timeZone)
-    log.debug "Later = " + HoldTime
+    //log.debug "Later = " + HoldTime
 
     result = new physicalgraph.device.HubAction(
         method: "GET",
@@ -261,7 +282,7 @@ private changeClsp(zoneId, coolingSetpoint) {
         ],
         query: [activity: "manual", until: "24:00"]
     )
-    log.debug "HTTP GET Parameters: " + result
+    //log.debug "HTTP GET Parameters: " + result
     try {
         sendHubCommand(result)
     } catch (all) {
@@ -280,7 +301,7 @@ private setMode(mode) {
         ],
         query: [mode: mode]
     )
-    log.debug "HTTP GET Parameters: " + result
+    //log.debug "HTTP GET Parameters: " + result
     try {
         sendHubCommand(result)
     } catch (all) {
@@ -306,7 +327,7 @@ private changeProfile(zoneId, nextProfile) {
         ],
         query: querys
     )
-    log.debug "HTTP GET Parameters: " + result
+    //log.debug "HTTP GET Parameters: " + result
     try {
         sendHubCommand(result)
     } catch (all) {
@@ -371,32 +392,5 @@ def lookupInfo(lookupName, lookupValue, lookupMode) {
                 it.value == lookupValue.toString()
             } ?.key
         }
-    }
-}
-def pollTask() {
-    syncSystem()
-    runIn(60 * settings.polling, pollTask)
-}
-def refreshChild(dni) {
-    log.debug "Refreshing for child " + dni
-    //def dni = [ app.id, systemID, zone.’@id’.text().toString() ].join(’|’)
-    def d = getChildDevice(dni)
-    if (d) {
-        log.debug "–Refreshing Child Zone ID: " + state.data[dni].thermostatZoneId
-        d.zUpdate(state.data[dni].temperature,
-            state.data[dni].thermostatOperatingState,
-            state.data[dni].humidity,
-            state.data[dni].heatingSetpoint,
-            state.data[dni].coolingSetpoint,
-            state.data[dni].thermostatFanMode,
-            state.data[dni].thermostatActivityState,
-            state.outsideAirTemp,
-            state.data[dni].thermostatHoldStatus,
-            state.data[dni].thermostatHoldUntil,
-            state.data[dni].thermostatDamper,
-            state.data[dni].thermostatZoneId)
-        log.debug "Data sent to DH"
-    } else {
-        log.debug "Skipping refresh for unused thermostat"
     }
 }
