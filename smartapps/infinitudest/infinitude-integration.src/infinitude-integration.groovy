@@ -7,9 +7,9 @@ for the specific language governing permissions and limitations under the Licens
 */
 
 definition(
-    name: "test-g",
+    name: "Infinitude Integration",
     namespace: "InfinitudeST",
-    author: "swerb73",
+    author: "zraken, swerb73",
     description: "Infinitude Integration for Carrier/Bryant Thermostats",
     category: "SmartThings Labs",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/temp_thermo-switch.png",
