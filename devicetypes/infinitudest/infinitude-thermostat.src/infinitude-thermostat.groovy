@@ -120,11 +120,15 @@ metadata {
             state "active", /*label: 'Awake',*/ action: "setProfAwake", backgroundColor: "#a0c0ff",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/wake138.png"
         }
-        standardTile("profileSet5", "device.profAutoActive", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "yes", label: 'Res', action: "setProfAuto", backgroundColor: "#20cc20", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/resume.png"
-            state "no", label: 'Res', action: "setProfAuto", backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/resume.png"
+        standardTile("profileSet5", "device.profAutoActive", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
+            state "yes", /*label: 'Res',*/ action: "setProfAuto", backgroundColor: "#20cc20", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/resume.png"
+            state "no", /*label: 'Res',*/ action: "setProfAuto", backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/resume.png"
         }
-        
+        valueTile("profileSet6", "device.profManualActive", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
+            state "yes", label: 'M', backgroundColor: "#20cc20"/*, icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/resume.png"*/
+            state "no", label: 'M', backgroundColor: "#ffffff"/*, icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/resume.png"*/
+        }
+
         standardTile("raiseHeatingSetpoint", "device.heatingSetpoint", width: 2, height: 1, decoration: "flat") {
             state "heatingSetpoint", label: 'Heat Up', action: "raiseHeatingSetpoint", backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/thermostat-up.png"
         }
@@ -196,7 +200,7 @@ metadata {
 
         main "temperature"
         details(["temperature",
-        	"profileSet1", "profileSet2", "profileSet3", "profileSet4", "profileSet5",
+        	"profileSet1", "profileSet2", "profileSet3", "profileSet4", "profileSet6", "profileSet5",
         	"refresh", "raiseHeatingSetpoint", "raiseCoolSetpoint",
             "thermostat", "heatingSetpoint", "coolingSetpoint", "fanMode", "lowerHeatingSetpoint",
             "lowerCoolSetpoint", "damperPosition", "holdStatus", "holdUntil", "mode"
@@ -270,23 +274,18 @@ def setProfile(nextProfile) {
 }
 def setProfHome() {
 	setProfile("home")
-    sendEvent([name: "profAutoActive", value: "no"])    
 }
 def setProfAway() {
 	setProfile("away")
-    sendEvent([name: "profAutoActive", value: "no"])    
 }
 def setProfAwake() {
 	setProfile("wake")
-    sendEvent([name: "profAutoActive", value: "no"])    
 }
 def setProfSleep() {
 	setProfile("sleep")
-    sendEvent([name: "profAutoActive", value: "no"])    
 }
 def setProfAuto() {
 	setProfile("auto")
-    sendEvent([name: "profAutoActive", value: "yes"])    
 }
 
 def profileUpdate() {
@@ -338,17 +337,18 @@ def zUpdate(temp, systemStatus, hum, hsp, csp, fan, currSched, oat, hold, otmr, 
     sendEvent([name: "zoneId", value: zoneid])
     //hum = "Indoor humidity " + hum + "%\nOutside temp " + oat + "°"
     sendEvent([name: "humidity", value: hum])
-    def modes = ["home":"profHomeActive", "away":"profAwayActive", "sleep":"profSleepActive", "wake":"profAwakeActive", "auto":"profAutoActive"]
+    def modes = ["home":"profHomeActive", "away":"profAwayActive", "sleep":"profSleepActive", "wake":"profAwakeActive", "auto":"profAutoActive", "manual":"profManualActive"]
     sendEvent([name: modes.get(oldSched), value: "no"])
     if(hold == "off") {
         //mode = Auto so mark this active profile in blue
         sendEvent([name: modes.get(currSched), value: "active"])
-        sendEvent([name: "profAutoActive", value: "yes"])    
+        sendEvent([name: "profAutoActive", value: "yes"])
+        sendEvent([name: "profManualActive", value: "no"])    
     }
     else {
-        //mode = DOle so mark this active profile in green
+        //mode = Hold so mark this active profile in green
         sendEvent([name: modes.get(currSched), value: "yes"])
-        sendEvent([name: "profAutoActive", value: "no"])    
+        sendEvent([name: "profAutoActive", value: "no"])
     }
     //ZZZZZ TEMP
     sendEvent([name: "thermostatOperatingState", value: "idle"])
