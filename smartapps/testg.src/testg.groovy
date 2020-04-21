@@ -90,7 +90,7 @@ def initialize() {
             log.debug "Processing DNI: ${dni} with Value: {val}"
         def d = getChildDevice(dni)
         if (!d) {
-            d = addChildDevice("InfinitudeST", "Infinitude Thermostat", dni, null, ["label": "Stat: " + dni.split("\\|")[3]])
+            d = addChildDevice("SmartThingsMod", "Infinitude Thermostat", dni, null, ["label": "Stat: " + dni.split("\\|")[3]])
             log.debug "----->created ${d.displayName} with id $dni"
         } else {
             log.debug "found ${d.displayName} with id $dni already exists"
@@ -260,25 +260,6 @@ private changeClsp(zoneId, coolingSetpoint) {
             "HOST": configURL
         ],
         query: [activity: "manual", until: "24:00"]
-    )
-    log.debug "HTTP GET Parameters: " + result
-    try {
-        sendHubCommand(result)
-    } catch (all) {
-        log.error "Error executing internal web request: $all"
-    }
-}
-
-private setMode(mode) {
-    //api/config?mode=auto/off/heat/cool/fanonly
-    log.debug "Changing Mode to " + mode
-    def result = new physicalgraph.device.HubAction(
-        method: "GET",
-        path: "/api/config",
-        headers: [
-            "HOST": configURL
-        ],
-        query: [mode: mode]
     )
     log.debug "HTTP GET Parameters: " + result
     try {
