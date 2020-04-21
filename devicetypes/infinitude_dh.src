@@ -88,7 +88,7 @@ metadata {
             }
         }
 
-        standardTile("profileSet1", "device.profHomeActive", width: 1, height: 1, inactiveLabel: false/*, decoration: "flat"*/) {
+        standardTile("profileSet1", "device.profHomeActive", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
             state "yes", /*label: 'Home',*/ action: "setProfHome", backgroundColor: "#20cc20",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/athome256.png"
             state "no", /*label: 'Home',*/ action: "setProfHome", backgroundColor: "#ffffff",
