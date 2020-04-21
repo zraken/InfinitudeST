@@ -88,7 +88,7 @@ metadata {
             }
         }
 
-        standardTile("profileSet1", "device.profHomeActive", width: 1, height: 1, inactiveLabel: false/*, decoration: "flat"*/) {
+        standardTile("profileSet1", "device.profHomeActive", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
             state "yes", /*label: 'Home',*/ action: "setProfHome", backgroundColor: "#20cc20",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/athome256.png"
             state "no", /*label: 'Home',*/ action: "setProfHome", backgroundColor: "#ffffff",
@@ -96,7 +96,7 @@ metadata {
             state "active", /*label: 'Home',*/ action: "setProfHome", backgroundColor: "#a0c0ff",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/athome256.png"
         }
-        standardTile("profileSet2", "device.profAwayActive", width: 1, height: 1, inactiveLabel: false/*, decoration: "flat"*/) {
+        standardTile("profileSet2", "device.profAwayActive", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
             state "yes", /*label: 'Away',*/ action: "setProfAway", backgroundColor: "#20cc20",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/away256.png"
             state "no", /*label: 'Away',*/ action: "setProfAway", backgroundColor: "#ffffff",
@@ -104,7 +104,7 @@ metadata {
             state "active", /*label: 'Away',*/ action: "setProfAway", backgroundColor: "#a0c0ff",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/away256.png"                
         }
-        standardTile("profileSet3", "device.profSleepActive", width: 1, height: 1, inactiveLabel: false/*, decoration: "flat"*/) {
+        standardTile("profileSet3", "device.profSleepActive", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
             state "yes", /*label: 'Sleep',*/ action: "setProfSleep", backgroundColor: "#20cc20",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/sleep256.png"
             state "no", /*label: 'Sleep',*/ action: "setProfSleep", backgroundColor: "#ffffff",
@@ -112,7 +112,7 @@ metadata {
             state "active", /*label: 'Sleep',*/ action: "setProfSleep", backgroundColor: "#a0c0ff",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/sleep256.png"
         }
-        standardTile("profileSet4", "device.profAwakeActive", width: 1, height: 1, inactiveLabel: false/*, decoration: "flat"*/) {
+        standardTile("profileSet4", "device.profAwakeActive", width: 1, height: 1, inactiveLabel: false, decoration: "flat") {
             state "yes", /*label: 'Awake',*/ action: "setProfAwake", backgroundColor: "#20cc20",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/wake138.png"
             state "no", /*label: 'Awake',*/ action: "setProfAwake", backgroundColor: "#ffffff",
@@ -120,7 +120,7 @@ metadata {
             state "active", /*label: 'Awake',*/ action: "setProfAwake", backgroundColor: "#a0c0ff",
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/wake138.png"
         }
-        standardTile("profileSet5", "device.profAutoActive", width: 2, height: 1, inactiveLabel: false/*, decoration: "flat"*/) {
+        standardTile("profileSet5", "device.profAutoActive", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
             state "yes", label: 'Res', action: "setProfAuto", backgroundColor: "#20cc20"
             state "no", label: 'Res', action: "setProfAuto", backgroundColor: "#ffffff"
         }
