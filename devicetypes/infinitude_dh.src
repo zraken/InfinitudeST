@@ -121,8 +121,8 @@ metadata {
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/wake138.png"
         }
         standardTile("profileSet5", "device.profAutoActive", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "yes", label: 'Res', action: "setProfAuto", backgroundColor: "#20cc20"
-            state "no", label: 'Res', action: "setProfAuto", backgroundColor: "#ffffff"
+            state "yes", label: 'Res', action: "setProfAuto", backgroundColor: "#20cc20", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/resume.png"
+            state "no", label: 'Res', action: "setProfAuto", backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/resume.png"
         }
         
         standardTile("raiseHeatingSetpoint", "device.heatingSetpoint", width: 2, height: 1, decoration: "flat") {
