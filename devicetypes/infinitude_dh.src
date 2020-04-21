@@ -433,18 +433,27 @@ private getThermostatDescriptionText(name, value, linkText) {
 
 void setHeatingSetpoint(setpoint) {
     log.debug "***setHeatingSetpoint($setpoint)"
+    
+    sendEvent([name: "thermostat", value: "updating"])
+    sendEvent([name: "temperature", value: "Updating..."])
+    
     if (setpoint) {
         state.heatingSetpoint = setpoint.toDouble()
-        runIn(2, "updateSetpoints", [overwrite: true])
+        runIn(15, "updateSetpoints", [overwrite: true])
     }
 }
 
 def setCoolingSetpoint(setpoint) {
     log.debug "***setCoolingSetpoint($setpoint)"
+
+    sendEvent([name: "thermostat", value: "updating"])
+    sendEvent([name: "temperature", value: "Updating..."])
+
     if (setpoint) {
         state.coolingSetpoint = setpoint.toDouble()
-        runIn(2, "updateSetpoints", [overwrite: true])
     }
+    
+    runIn(15, "updateSetpoints", [overwrite: true])
 }
 
 def updateSetpoints() {
@@ -642,7 +651,8 @@ def generateSetpointEvent() {
 }
 
 def raiseHeatingSetpoint() {
-    sendEvent([name: "thermostat", value: "updating"])
+	sendEvent([name: "thermostat", value: "updating"])
+    sendEvent([name: "temperature", value: "Updating..."])
     alterSetpoint(true, "heatingSetpoint")
     def heatingSetpoint = getTempInLocalScale("heatingSetpoint")
     def currentZone = device.currentValue("zoneId")
@@ -653,6 +663,7 @@ def raiseHeatingSetpoint() {
 
 def lowerHeatingSetpoint() {
     sendEvent([name: "thermostat", value: "updating"])
+    sendEvent([name: "temperature", value: "Updating..."])
     alterSetpoint(false, "heatingSetpoint")
     def heatingSetpoint = getTempInLocalScale("heatingSetpoint")
     def currentZone = device.currentValue("zoneId")
@@ -663,6 +674,7 @@ def lowerHeatingSetpoint() {
 
 def raiseCoolSetpoint() {
     sendEvent([name: "thermostat", value: "updating"])
+    sendEvent([name: "temperature", value: "Updating..."])
     alterSetpoint(true, "coolingSetpoint")
     def coolingSetpoint = getTempInLocalScale("coolingSetpoint")
     def currentZone = device.currentValue("zoneId")
@@ -673,6 +685,7 @@ def raiseCoolSetpoint() {
 
 def lowerCoolSetpoint() {
     sendEvent([name: "thermostat", value: "updating"])
+    sendEvent([name: "temperature", value: "Updating..."])
     alterSetpoint(false, "coolingSetpoint")
     def coolingSetpoint = getTempInLocalScale("coolingSetpoint")
     def currentZone = device.currentValue("zoneId")
