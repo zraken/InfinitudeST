@@ -46,7 +46,7 @@ metadata {
         attribute "deviceTemperatureUnit", "string"
         attribute "deviceAlive", "enum", ["true", "false"]
         attribute "thermostatSchedule", "string"
-        attribute "damperPosition", "number"
+        attribute "outsideAirTemp", "number"
         attribute "holdStatus", "string"
         attribute "holdUntil", "string"
         attribute "outsideTemp", "number"
@@ -164,7 +164,7 @@ metadata {
         valueTile("holdUntil", "device.thermostatHoldUntil", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
             state "holdUntil", label: 'Hold Until:\n${currentValue}', backgroundColor: "#ffffff"
         }
-        valueTile("damperPosition", "device.thermostatDamper", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
+        valueTile("damperPosition", "device.damperPosition", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
             state "damperPosition", label: 'Damper:\n${currentValue}', backgroundColor: "#ffffff"
         }
 
@@ -174,11 +174,11 @@ metadata {
             state "updating", label: "Working", icon: "st.secondary.secondary"
         }
         standardTile("mode", "device.thermostatMode", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "off", action: "switchMode", nextState: "updating", label: 'Off'/*, icon: "st.thermostat.heating-cooling-off"*/
-            state "heat", action: "switchMode", nextState: "updating", label: 'Heat'/*, icon: "st.thermostat.heat"*/
-            state "cool", action: "switchMode", nextState: "updating", label: 'Cool'/*, icon: "st.thermostat.cool"*/
-            state "auto", action: "switchMode", nextState: "updating", label: 'Auto'/*, icon: "st.thermostat.auto"*/
-            state "fanonly", action: "switchMode", nextState: "updating", label: 'FanOnly'/*, icon: "st.thermostat.emergency-heat"*/
+            state "off", action: "switchMode", nextState: "updating"/*, label: 'Off'*/, icon: "st.thermostat.heating-cooling-off"
+            state "heat", action: "switchMode", nextState: "updating"/*, label: 'Heat'*/, icon: "st.thermostat.heat"/*, backgroundColor: "#e86d13" */
+            state "cool", action: "switchMode", nextState: "updating"/*, label: 'Cool'*/, icon: "st.thermostat.cool"/*, backgroundColor: "#00a0dc" */
+            state "auto", action: "switchMode", nextState: "updating"/*, label: 'Auto'*/, icon: "st.thermostat.auto"/*, backgroundColor: "#20cc20" */
+            state "fanonly", action: "switchMode", nextState: "updating"/*, label: 'FanOnly'*/, icon: "st.thermostat.heating-cooling-off"
             state "updating", label: "Updating..."/*, icon: "st.secondary.secondary"*/
         }
         // Not Displaying These   
@@ -202,8 +202,8 @@ metadata {
         details(["temperature",
         	"profileSet1", "profileSet2", "profileSet3", "profileSet4", "profileSet6", "profileSet5",
         	"refresh", "raiseHeatingSetpoint", "raiseCoolSetpoint",
-            "thermostat", "heatingSetpoint", "coolingSetpoint", "fanMode", "lowerHeatingSetpoint",
-            "lowerCoolSetpoint", "damperPosition", "holdStatus", "holdUntil", "mode"
+            "mode", "heatingSetpoint", "coolingSetpoint", "thermostat", "lowerHeatingSetpoint",
+            "lowerCoolSetpoint", "fanMode", "holdStatus", "holdUntil", "damperPosition" 
         ])
     }
 
@@ -247,6 +247,7 @@ def parse(String description) {
 def refresh() {
     log.debug "refresh"
     sendEvent([name: "thermostat", value: "updating"])
+    sendEvent([name: "temperature", value: "Updating..."])
     poll2()
 }
 void poll() {}
@@ -338,7 +339,7 @@ def zUpdate(temp, systemStatus, hum, hsp, csp, fan, currSched, oat, hold, otmr, 
     sendEvent([name: "thermostatSchedule", value: currSched])
     sendEvent([name: "thermostatHoldStatus", value: hold])
     sendEvent([name: "thermostatHoldUntil", value: otmr])
-    sendEvent([name: "thermostatDamper", value: damperposition])
+    sendEvent([name: "damperPosition", value: damperposition])
     sendEvent([name: "zoneId", value: zoneid])
     //hum = "Indoor humidity " + hum + "%\nOutside temp " + oat + "°"
     sendEvent([name: "humidity", value: hum])
@@ -515,6 +516,9 @@ def switchSchedule() {
     //TODO
 }
 def switchMode() {
+	sendEvent([name: "thermostat", value: "updating"])
+    sendEvent([name: "temperature", value: "Updating..."])
+
     def currentMode = device.currentValue("thermostatMode")
     def modeOrder = modes()
     if (modeOrder) {
@@ -532,7 +536,7 @@ def switchToMode(mode) {
     log.debug "switchToMode: ${mode}"
     parent.setMode(mode)
     sendEvent([name: "thermostatMode", value: mode])
-    runIn(15, "refresh", [overwrite: true])
+    runIn(5, "refresh", [overwrite: true])
 
     /*****
     def deviceId = device.deviceNetworkId.split(/./).last()

@@ -137,7 +137,7 @@ def httpCallback(physicalgraph.device.HubResponse hubResponseX) {
                         thermostatActivityState: zone.currentActivity[0],
                         thermostatHoldStatus: zone.hold[0],
                         thermostatHoldUntil: zone.otmr[0],
-                        //thermostatDamper: zone.damperposition[0],
+                        thermostatDamper: zone.damperposition[0],
                         thermostatZoneId: zone.id[0]
                     ]
                     log.debug "===== " + zone.name[0] + " ====="
