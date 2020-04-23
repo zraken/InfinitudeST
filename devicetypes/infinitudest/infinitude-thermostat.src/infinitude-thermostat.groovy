@@ -8,9 +8,12 @@ Unless required by applicable law or agreed to in writing, software distributed 
 on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
 for the specific language governing permissions and limitations under the License.
 (Based on) Ecobee Thermostat
-Author: SmartThings
-Date: 2013-06-13
+
+Author: zraken, swerb73
+Date: 2020.04.23
+
 */
+
 metadata {
     definition(name: "Infinitude Thermostat", namespace: "InfinitudeST", author: "SmartThingsMod") {
         capability "Actuator"
@@ -181,9 +184,10 @@ metadata {
             state "fanonly", action: "switchMode", nextState: "updating"/*, label: 'FanOnly'*/, icon: "st.thermostat.heating-cooling-off"
             state "updating", label: "Updating..."/*, icon: "st.secondary.secondary"*/
         }
+        
         // Not Displaying These   
         valueTile("outsideTemp", "device.outsideAirTemp", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
-            state "outsideTemp", label: '${currentValue}° outside', backgroundColor: "#ffffff" /*, icon: "st.Weather.weather14" */
+            state "outsideTemp", label: '${currentValue}° outside', backgroundColor: "#ffffff", icon: "st.Weather.weather14"
         }
         valueTile("zoneId", "device.zoneId", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
             state "zoneId", label: 'Zone ID:\n${currentValue}', backgroundColor: "#ffffff"
@@ -197,6 +201,7 @@ metadata {
             state "auto", action: "profileUpdate", label: 'Profile: Auto', nextState: "changing", backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/home1-icn.png"
             state "changing", label: 'Updating...' /*, icon: "st.motion.motion.active" */
         }
+        // END Not Displaying These
 
         main "temperature"
         details(["temperature",
@@ -208,7 +213,9 @@ metadata {
     }
 
     preferences {
-        //input "holdType", "enum", title: "Hold Type",
+        input title: "", description: "Infinitude Thermostat Device Handler. Advanced Troubleshooting info, Zone ID: ${zoneId}, Damper Position: ${damperPosition}.", displayDuringSetup: false, type: "paragraph", element: "paragraph", required: true
+
+		//input "holdType", "enum", title: "Hold Type",
         // description: "When changing temperature, use Temporary (Until next transition) or Permanent hold (default)",
         // required: false, options:["Temporary", "Permanent"]
         //input "deadbandSetting", "number", title: "Minimum temperature difference between the desired Heat and Cool " +
@@ -344,16 +351,16 @@ def zUpdate(temp, systemStatus, hum, hsp, csp, fan, currSched, oat, hold, otmr, 
     //hum = "Indoor humidity " + hum + "%\nOutside temp " + oat + "°"
     sendEvent([name: "humidity", value: hum])
     //def modes = ["home":"profHomeActive", "away":"profAwayActive", "sleep":"profSleepActive", "wake":"profAwakeActive", "auto":"profAutoActive", "manual":"profManualActive"]
-    sendEvent([name: state.modes.get(oldSched), value: "no"])
+    //sendEvent([name: state.modes.get(oldSched), value: "no"]) //SMW REMOVED - java.lang.NullPointerException: Cannot invoke method get() on null object @line 354 (zUpdate)
     if(hold == "off") {
         //mode = Auto so mark this active profile in blue
-        sendEvent([name: state.modes.get(currSched), value: "active"])
+        //sendEvent([name: state.modes.get(currSched), value: "active"]) //SMW REMOVED - java.lang.NullPointerException: Cannot invoke method get() on null object @line 357 (zUpdate)
         sendEvent([name: "profAutoActive", value: "yes"])
         sendEvent([name: "profManualActive", value: "no"])    
     }
     else {
         //mode = Hold so mark this active profile in green
-        sendEvent([name: state.modes.get(currSched), value: "yes"])
+        //sendEvent([name: state.modes.get(currSched), value: "yes"])  //SMW REMOVED - java.lang.NullPointerException: Cannot invoke method get() on null object @line 363 (zUpdate)
         sendEvent([name: "profAutoActive", value: "no"])
         if(currSched != "manual") {
             sendEvent([name: "profManualActive", value: "no"])
