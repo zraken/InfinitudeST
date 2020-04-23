@@ -78,10 +78,10 @@ metadata {
                 attributeState("cooling", backgroundColor:"#00A0DC")
             }
             tileAttribute("device.thermostatMode", key: "THERMOSTAT_MODE") {
-                attributeState("off", label:'${name}')
-                attributeState("heat", label:'${name}')
-                attributeState("cool", label:'${name}')
-                attributeState("auto", label:'${name}')
+                attributeState("off", label:'off')
+                attributeState("heat", label:'heat')
+                attributeState("cool", label:'cool')
+                attributeState("auto", label:'auto')
             }
             tileAttribute("device.heatingSetpoint", key: "HEATING_SETPOINT") {
                 attributeState("heatingSetpoint", label:'${currentValue}', unit:"dF", defaultState: true)
@@ -234,7 +234,7 @@ def installed() {
     for(mode in state.modes) {
         sendEvent([name: mode.getValue(), value: "no"])    
     }
-    sendEvent([name: "thermostatSchedule", value: "auto"])    
+    //sendEvent([name: "thermostatSchedule", value: "auto"])    
 }
 
 // Device Watch will ping the device to proactively determine if the device has gone offline
@@ -254,7 +254,6 @@ def parse(String description) {
 def refresh() {
     log.debug "refresh"
     sendEvent([name: "thermostat", value: "updating"])
-    sendEvent([name: "temperature", value: "Updating..."])
     poll2()
 }
 void poll() {}
@@ -267,7 +266,6 @@ void poll2() {
 
 def setProfile(nextProfile) {
     sendEvent([name: "thermostat", value: "updating"])
-    sendEvent([name: "temperature", value: "Updating..."])
 
     def currentProfile = device.currentValue("thermostatSchedule")
     def currentZone = device.currentValue("zoneId")
@@ -334,17 +332,17 @@ def profileUpdate() {
     runIn(15, "refresh", [overwrite: true])
 }
 
-def zUpdate(temp, systemStatus, hum, hsp, csp, fan, currSched, oat, hold, otmr, damperposition, zoneid) {
-    log.debug "zupdate: " + temp + ", " + systemStatus + ", " + hum + ", " + hsp + ", " + csp + ", " + fan + ", " + currSched + ", " + oat + ", " + hold + ", " + otmr + ", " + damperposition + ", " + zoneid
+def zUpdate(temp, operStatus, hum, hsp, csp, fan, currSched, oat, hold, otmr, damperposition, zoneid) {
+    log.debug "zupdate: " + temp + ", " + operStatus + ", " + hum + ", " + hsp + ", " + csp + ", " + fan + ", " + currSched + ", " + oat + ", " + hold + ", " + otmr + ", " + damperposition + ", " + zoneid
     def oldSched = device.currentValue("thermostatSchedule")
     def oldHold = device.currentValue("thermostatHoldStatus")
     /*
-    def updates = ["temperature":temp, "thermostat":systemStatus, "heatingSetpoint":hsp, "coolingSetpoint":csp,
+    def updates = ["temperature":temp, "thermostat":operStatus, "heatingSetpoint":hsp, "coolingSetpoint":csp,
         "thermostatFanMode":fan, "outsideAirTemp":oat, "thermostatSchedule":currSched, "thermostatHoldStatus":hold,
         "thermostatHoldUntil":otmr, "damperPosition":damperposition, "zoneId":zoneid, "humidity":hum]
     */
     sendEvent([name: "temperature", value: temp, unit: "F"])
-    sendEvent([name: "thermostat", value: systemStatus])
+    sendEvent([name: "thermostat", value: operStatus]) //DUPLICATE - not needed
     sendEvent([name: "heatingSetpoint", value: hsp])
     sendEvent([name: "coolingSetpoint", value: csp])
     sendEvent([name: "thermostatFanMode", value: fan])
@@ -358,25 +356,22 @@ def zUpdate(temp, systemStatus, hum, hsp, csp, fan, currSched, oat, hold, otmr, 
     sendEvent([name: "humidity", value: hum])
     //def modes = ["home":"profHomeActive", "away":"profAwayActive", "sleep":"profSleepActive", "wake":"profAwakeActive", "auto":"profAutoActive", "manual":"profManualActive"]
     if(currSched != oldSched || oldHold != hold) {
-        sendEvent([name: state.modes.get(oldSched), value: "no"])
+        state.modes.each{ modex ->
+                sendEvent([name: modex.getValue(), value: "no"])    
+        }
         if(hold == "off") {
             //mode = Auto so mark this active profile in blue
             sendEvent([name: state.modes.get(currSched), value: "active"])
             sendEvent([name: "profAutoActive", value: "yes"])
-            sendEvent([name: "profManualActive", value: "no"])    
         }
         else {
             //mode = Hold so mark this active profile in green
             sendEvent([name: state.modes.get(currSched), value: "yes"])
-            sendEvent([name: "profAutoActive", value: "no"])
-            if(currSched != "manual") {
-                sendEvent([name: "profManualActive", value: "no"])
-            }
         }
     }
-    sendEvent([name: "thermostatOperatingState", value: systemStatus]) //idle/heating/cooling
-    //ZZZZZ TEMP
-    sendEvent([name: "thermostatMode", value: "heat"]) //off/auto/heat/cool
+    sendEvent([name: "thermostatOperatingState", value: operStatus]) //idle/heating/cooling
+    //ZZZZZ TODO
+    //sendEvent([name: "thermostatMode", value: "heat"]) //off/auto/heat/cool
 }
 def generateEvent(Map results) {
     if (results) {
@@ -462,7 +457,6 @@ void setHeatingSetpoint(setpoint) {
     log.debug "***setHeatingSetpoint($setpoint)"
     
     sendEvent([name: "thermostat", value: "updating"])
-    sendEvent([name: "temperature", value: "Updating..."])
     
     if (setpoint) {
         state.heatingSetpoint = setpoint.toDouble()
@@ -474,7 +468,6 @@ def setCoolingSetpoint(setpoint) {
     log.debug "***setCoolingSetpoint($setpoint)"
 
     sendEvent([name: "thermostat", value: "updating"])
-    sendEvent([name: "temperature", value: "Updating..."])
 
     if (setpoint) {
         state.coolingSetpoint = setpoint.toDouble()
@@ -535,7 +528,6 @@ def switchSchedule() {
 }
 def switchMode() {
 	sendEvent([name: "thermostat", value: "updating"])
-    sendEvent([name: "temperature", value: "Updating..."])
 
     def currentMode = device.currentValue("thermostatMode")
     def modeOrder = modes()
@@ -684,7 +676,6 @@ def generateSetpointEvent() {
 //raisebool = true or false
 def raiseLowerHeatCoolSetpoint(setPointStr, raisebool) {
 	sendEvent([name: "thermostat", value: "updating"])
-    //sendEvent([name: "temperature", value: "Updating..."])
     alterSetpoint(raisebool, setPointStr)
     def setpoint = getTempInLocalScale(setPointStr)
     def currentZone = device.currentValue("zoneId")
