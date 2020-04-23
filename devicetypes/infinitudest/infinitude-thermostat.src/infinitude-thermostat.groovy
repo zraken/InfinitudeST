@@ -355,6 +355,9 @@ def zUpdate(temp, systemStatus, hum, hsp, csp, fan, currSched, oat, hold, otmr, 
         //mode = Hold so mark this active profile in green
         sendEvent([name: state.modes.get(currSched), value: "yes"])
         sendEvent([name: "profAutoActive", value: "no"])
+        if(currSched != "manual") {
+            sendEvent([name: "profManualActive", value: "no"])
+        }
     }
     //ZZZZZ TEMP
     sendEvent([name: "thermostatOperatingState", value: "idle"])
@@ -499,7 +502,7 @@ void resumeProgram() {
         sendEvent("name": "thermostat", "value": "failed resume click refresh", "description": statusText, displayed: false)
         log.error "Error resumeProgram() check parent.resumeProgram(deviceId)"
     }
-    //xyzrunIn(5, "refresh", [overwrite: true])
+    //xyzrunIn(5, refresh, [overwrite: true])
 }
 
 def modes() {
@@ -536,7 +539,7 @@ def switchToMode(mode) {
     log.debug "switchToMode: ${mode}"
     parent.setMode(mode)
     sendEvent([name: "thermostatMode", value: mode])
-    runIn(5, "refresh", [overwrite: true])
+    runIn(5, refresh, [overwrite: true])
 
     /*****
     def deviceId = device.deviceNetworkId.split(/./).last()
@@ -547,7 +550,7 @@ def switchToMode(mode) {
         generateModeEvent(device.currentValue("thermostatMode"))
     }
     *****/
-    //XYZ runIn(5, "refresh", [overwrite: true])
+    //XYZ runIn(5, refresh, [overwrite: true])
 }
 
 def switchFanMode() {
@@ -571,7 +574,7 @@ def switchToFanMode(fanMode) {
         // Ensure the DTH tile is reset
         generateFanModeEvent(device.currentValue("thermostatFanMode"))
     }
-    //XYZ runIn(5, "refresh", [overwrite: true])
+    //XYZ runIn(5, refresh, [overwrite: true])
 }
 
 def getDataByName(String name) {
@@ -662,6 +665,40 @@ def generateSetpointEvent() {
     sendEvent("name": "thermostatSetpoint", "value": setpoint, "unit": location.temperatureScale)
 }
 
+//setPointStr = "heatingSetpoint" or "coolingSetpoint"/
+//raisebool = true or false
+def raiseLowerHeatCoolSetpoint(setPointStr, raisebool) {
+	sendEvent([name: "thermostat", value: "updating"])
+    sendEvent([name: "temperature", value: "Updating..."])
+    alterSetpoint(raisebool, setPointStr)
+    def setpoint = getTempInLocalScale(setPointStr)
+    def currentZone = device.currentValue("zoneId")
+    log.debug /*(raisebool)?"Raising ":"Lowering " +*/ setPointStr + " on Zone: " + currentZone + " to: " + setpoint
+    if(setPointStr == "heatingSetpoint") {
+        parent.changeHtsp(currentZone, setpoint)
+    }
+    else {
+        parent.changeClsp(currentZone, setpoint)
+    }
+    state.modes.each{ key, value -> 
+        (key == "manual") ? sendEvent([name: value, value: "yes"])
+            : sendEvent([name: value, value: "no"])
+    }
+    runIn(15, "refresh", [overwrite: true])
+}
+def raiseHeatingSetpoint() {
+    raiseLowerHeatCoolSetpoint("heatingSetpoint", true)
+}
+def lowerHeatingSetpoint() {
+    raiseLowerHeatCoolSetpoint("heatingSetpoint", false)
+}
+def raiseCoolSetpoint() {
+    raiseLowerHeatCoolSetpoint("coolingSetpoint", true)
+}
+def lowerCoolSetpoint() {
+    raiseLowerHeatCoolSetpoint("coolingSetpoint", false)
+}
+/*
 def raiseHeatingSetpoint() {
 	sendEvent([name: "thermostat", value: "updating"])
     sendEvent([name: "temperature", value: "Updating..."])
@@ -705,6 +742,7 @@ def lowerCoolSetpoint() {
     parent.changeClsp(currentZone, coolingSetpoint)
     runIn(15, "refresh", [overwrite: true])
 }
+*/
 
 // Adjusts nextHeatingSetpoint either .5° C/1° F) if raise true/false
 def alterSetpoint(raise, setpoint) {
@@ -779,7 +817,7 @@ def updateSetpoint(data) {
     }
     */
 
-    //XYZ runIn(5, "refresh", [overwrite: true])
+    //XYZ runIn(5, refresh, [overwrite: true])
 }
 
 def generateStatusEvent() {
