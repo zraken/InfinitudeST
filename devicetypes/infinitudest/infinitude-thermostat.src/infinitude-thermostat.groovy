@@ -73,7 +73,7 @@ metadata {
                 icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/humidity2-256.png"
             }
             tileAttribute("device.thermostatOperatingState", key: "OPERATING_STATE") {
-                attributeState("idle", backgroundColor:"#00A0DC")
+                attributeState("idle", backgroundColor:"#28DC22")
                 attributeState("heating", backgroundColor:"#e86d13")
                 attributeState("cooling", backgroundColor:"#00A0DC")
             }
@@ -155,7 +155,7 @@ metadata {
             state "coolingSetpoint", label: '${currentValue}°', backgroundColor: "#00a0dc"
         }
 
-        standardTile("refresh", "device.thermostatMode", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
+        standardTile("refresh", "device.refresh", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
             state "default", label: 'Refresh', action: "refresh.refresh" , backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/zraken/InfinitudeST/master/resources/refresh.png"
         }
         valueTile("fanMode", "device.thermostatFanMode", width: 2, height: 1, inactiveLabel: false, decoration: "flat") {
@@ -337,6 +337,12 @@ def profileUpdate() {
 def zUpdate(temp, systemStatus, hum, hsp, csp, fan, currSched, oat, hold, otmr, damperposition, zoneid) {
     log.debug "zupdate: " + temp + ", " + systemStatus + ", " + hum + ", " + hsp + ", " + csp + ", " + fan + ", " + currSched + ", " + oat + ", " + hold + ", " + otmr + ", " + damperposition + ", " + zoneid
     def oldSched = device.currentValue("thermostatSchedule")
+    def oldHold = device.currentValue("thermostatHoldStatus")
+    /*
+    def updates = ["temperature":temp, "thermostat":systemStatus, "heatingSetpoint":hsp, "coolingSetpoint":csp,
+        "thermostatFanMode":fan, "outsideAirTemp":oat, "thermostatSchedule":currSched, "thermostatHoldStatus":hold,
+        "thermostatHoldUntil":otmr, "damperPosition":damperposition, "zoneId":zoneid, "humidity":hum]
+    */
     sendEvent([name: "temperature", value: temp, unit: "F"])
     sendEvent([name: "thermostat", value: systemStatus])
     sendEvent([name: "heatingSetpoint", value: hsp])
@@ -351,24 +357,26 @@ def zUpdate(temp, systemStatus, hum, hsp, csp, fan, currSched, oat, hold, otmr, 
     //hum = "Indoor humidity " + hum + "%\nOutside temp " + oat + "°"
     sendEvent([name: "humidity", value: hum])
     //def modes = ["home":"profHomeActive", "away":"profAwayActive", "sleep":"profSleepActive", "wake":"profAwakeActive", "auto":"profAutoActive", "manual":"profManualActive"]
-    //sendEvent([name: state.modes.get(oldSched), value: "no"]) //SMW REMOVED - java.lang.NullPointerException: Cannot invoke method get() on null object @line 354 (zUpdate)
-    if(hold == "off") {
-        //mode = Auto so mark this active profile in blue
-        //sendEvent([name: state.modes.get(currSched), value: "active"]) //SMW REMOVED - java.lang.NullPointerException: Cannot invoke method get() on null object @line 357 (zUpdate)
-        sendEvent([name: "profAutoActive", value: "yes"])
-        sendEvent([name: "profManualActive", value: "no"])    
-    }
-    else {
-        //mode = Hold so mark this active profile in green
-        //sendEvent([name: state.modes.get(currSched), value: "yes"])  //SMW REMOVED - java.lang.NullPointerException: Cannot invoke method get() on null object @line 363 (zUpdate)
-        sendEvent([name: "profAutoActive", value: "no"])
-        if(currSched != "manual") {
-            sendEvent([name: "profManualActive", value: "no"])
+    if(currSched != oldSched || oldHold != hold) {
+        sendEvent([name: state.modes.get(oldSched), value: "no"])
+        if(hold == "off") {
+            //mode = Auto so mark this active profile in blue
+            sendEvent([name: state.modes.get(currSched), value: "active"])
+            sendEvent([name: "profAutoActive", value: "yes"])
+            sendEvent([name: "profManualActive", value: "no"])    
+        }
+        else {
+            //mode = Hold so mark this active profile in green
+            sendEvent([name: state.modes.get(currSched), value: "yes"])
+            sendEvent([name: "profAutoActive", value: "no"])
+            if(currSched != "manual") {
+                sendEvent([name: "profManualActive", value: "no"])
+            }
         }
     }
+    sendEvent([name: "thermostatOperatingState", value: systemStatus]) //idle/heating/cooling
     //ZZZZZ TEMP
-    sendEvent([name: "thermostatOperatingState", value: "idle"])
-    sendEvent([name: "thermostatMode", value: "heat"])
+    sendEvent([name: "thermostatMode", value: "heat"]) //off/auto/heat/cool
 }
 def generateEvent(Map results) {
     if (results) {
@@ -546,7 +554,7 @@ def switchToMode(mode) {
     log.debug "switchToMode: ${mode}"
     parent.setMode(mode)
     sendEvent([name: "thermostatMode", value: mode])
-    runIn(5, refresh, [overwrite: true])
+    runIn(15, refresh, [overwrite: true])
 
     /*****
     def deviceId = device.deviceNetworkId.split(/./).last()
@@ -676,7 +684,7 @@ def generateSetpointEvent() {
 //raisebool = true or false
 def raiseLowerHeatCoolSetpoint(setPointStr, raisebool) {
 	sendEvent([name: "thermostat", value: "updating"])
-    sendEvent([name: "temperature", value: "Updating..."])
+    //sendEvent([name: "temperature", value: "Updating..."])
     alterSetpoint(raisebool, setPointStr)
     def setpoint = getTempInLocalScale(setPointStr)
     def currentZone = device.currentValue("zoneId")
@@ -776,7 +784,7 @@ def alterSetpoint(raise, setpoint) {
         sendEvent("name": "coolingSetpoint", "value": getTempInLocalScale(data.targetCoolingSetpoint, deviceScale),
             unit: getTemperatureScale(), eventType: "ENTITY_UPDATE", displayed: false)
     }
-    runIn(5, "updateSetpoint", [data: data, overwrite: true])
+    //no idea why this is needed: runIn(5, "updateSetpoint", [data: data, overwrite: true])
 }
 
 def enforceSetpointLimits(setpoint, data, raise = null) {

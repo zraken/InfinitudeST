@@ -137,28 +137,14 @@ def httpCallback(physicalgraph.device.HubResponse hubResponseX) {
                         thermostatActivityState: zone.currentActivity[0],
                         thermostatHoldStatus: zone.hold[0],
                         thermostatHoldUntil: zone.otmr[0],
-                        thermostatDamper: zone.damperposition[0],
+                        thermostatDamper: ((zone.damperposition) ?  zone.damperposition[0] : 0),
                         thermostatZoneId: zone.id[0]
                     ]
                     log.debug "===== " + zone.name[0] + " ====="
                     if (state.SystemRunning) {
+                        log.debug(state.data[dni])
                         refreshChild(dni)
                     }
-                    /****
-                    log.debug "Temperature: " + state.data[dni].temperature
-                    log.debug "Humidity: " + state.data[dni].humidity
-                    log.debug "Heat set point: " + state.data[dni].heatingSetpoint
-                    log.debug "Cooling set point: " + state.data[dni].coolingSetpoint
-                    log.debug "Fan: " + state.data[dni].thermostatFanMode
-                    log.debug "Operating state: " + state.data[dni].thermostatOperatingState
-                    log.debug "Current schedule mode: " + state.data[dni].thermostatActivityState
-                    log.debug "Current Hold Status: " + state.data[dni].thermostatHoldStatus
-                    log.debug "Hold Until: " + state.data[dni].thermostatHoldUntil
-                    log.debug "Current Damper Position: " + state.data[dni].thermostatDamper
-                    log.debug "Current Outside Temp: " + state.outsideAirTemp
-                    log.debug "Zone ID: " + state.data[dni].thermostatZoneId
-                    log.debug "=====Done====="
-                    ****/
                 }
         }
     } else {
@@ -168,12 +154,13 @@ def httpCallback(physicalgraph.device.HubResponse hubResponseX) {
 
 def refreshChild(dni) {
     log.debug "Refreshing for child " + dni
+    def operStateMap = ["heat":"heating", "cool":"cooling","off":"idle"]
     //def dni = [ app.id, systemID, zone.’@id’.text().toString() ].join(’|’)
     def d = getChildDevice(dni)
     if (d) {
         log.debug "–Refreshing Child Zone ID: " + state.data[dni].thermostatZoneId
         d.zUpdate(state.data[dni].temperature,
-            state.data[dni].thermostatOperatingState,
+            operStateMap.get(state.data[dni].thermostatOperatingState),
             state.data[dni].humidity,
             state.data[dni].heatingSetpoint,
             state.data[dni].coolingSetpoint,
